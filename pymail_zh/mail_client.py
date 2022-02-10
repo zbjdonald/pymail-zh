@@ -1,3 +1,4 @@
+import logging
 import ssl
 
 import requests
@@ -165,6 +166,21 @@ class MailQiYeQQ(MailClient):
                  stream=False, ssl_context=mail_ssl_context, timeout=None):
         super(MailQiYeQQ, self).__init__(user_name, password, host=host, port=port, use_uid=use_uid,
                                          use_ssl=use_ssl, stream=stream, ssl_context=ssl_context, timeout=timeout)
+
+    def move_mail(self, uid, dest_path):
+        """
+        :param uid:
+        :param dest_path: 准备移动到的 '/parent_folder/sub_folder/sub_folder'
+        :return:
+        """
+        dest_path = dest_path.strip('/')
+        try:
+            if not self.folder_exists(dest_path):
+                if 'create failed' in self.create_mail_folder(dest_path):
+                    raise CreateFolderFailed(f"创建邮箱文件夹 {dest_path} 失败")
+            self.move(uid, dest_path)
+        except (IMAPClientError,) as e:
+            logging.error(e)
 
 
 class MailAliyun(MailClient):
