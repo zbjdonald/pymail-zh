@@ -1,6 +1,5 @@
 import ssl
 
-import requests
 from imapclient import IMAPClient, SEEN
 from imapclient.exceptions import IMAPClientError
 from tqdm import tqdm
@@ -40,7 +39,6 @@ class MailClient(IMAPClient):
                                          ssl_context=ssl_context, timeout=timeout)
         self._user_name = user_name
         self._password = password
-        self.req_session = requests.Session()
 
     def __enter__(self):
         self.login(self._user_name, self._password)
@@ -165,6 +163,26 @@ class MailQiYeQQ(MailClient):
                  stream=False, ssl_context=mail_ssl_context, timeout=None):
         super(MailQiYeQQ, self).__init__(user_name, password, host=host, port=port, use_uid=use_uid,
                                          use_ssl=use_ssl, stream=stream, ssl_context=ssl_context, timeout=timeout)
+
+    def move_mail(self, uid, dest_path):
+        """
+        :param uid:
+        :param dest_path: 准备移动到的 '/parent_folder/sub_folder/sub_folder'
+        :return:
+        """
+        dest_path = dest_path.strip('/')
+        try:
+            self.move(uid, dest_path)
+        except (IMAPClientError,):
+            # 可能是没有目标文件夹，或者此邮件就在这个目标文件夹里。
+            if self.folder_exists(dest_path):
+                return
+            else:
+                ret = self.create_mail_folder(dest_path)
+                if ret == 'create completed':
+                    self.move(uid, dest_path)
+                else:
+                    raise CreateFolderFailed(f"创建邮箱文件夹 {dest_path} 失败")
 
 
 class MailAliyun(MailClient):
