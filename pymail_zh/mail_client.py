@@ -131,7 +131,7 @@ class MailClient(IMAPClient):
             for uid, message_data in tqdm(self.fetch(messages, 'RFC822').items()):
                 eml = message_data[b'RFC822']
                 try:
-                    mail_info = eml_to_mail_info(eml, attach_filter=attach_filter)
+                    mail_info = eml_to_mail_info(eml, attach_filter=attach_filter, html_parser=html_parser)
                 except DecodeException as e:
                     # 查看邮箱文件夹，例如 Decode_failed/subject 中包含邮件主题报错的邮件。
                     self.move_mail(uid, str(e))

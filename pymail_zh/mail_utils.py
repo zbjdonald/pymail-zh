@@ -5,6 +5,7 @@ from copy import copy
 from datetime import datetime
 from email import message_from_bytes
 from email.header import decode_header
+from typing import Union
 
 from bs4 import BeautifulSoup
 
@@ -18,6 +19,20 @@ class CreateFolderFailed(Exception):
 
 
 default_attach_filter = ('xls', 'xlsx', 'pdf', 'doc', 'docx', 'zip', 'rar')
+
+
+def compose_multi_email_user_string(users: Union[str, list]):
+    """
+    ['aa@test.com.cn'] => 'aa@test.com.cn'
+    ['aa@test.com.cn', 'bb@test.com.cn'] => 'aa@test.com.cn, bb@test.com.cn'
+    :param users:
+    :return:
+    """
+    if isinstance(users, list):
+        ret = ', '.join(users) if len(users) > 1 else users[0]
+    else:
+        ret = users
+    return ret
 
 
 def get_decode_content(encode_str):
